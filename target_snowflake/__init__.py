@@ -48,6 +48,7 @@ def add_metadata_columns_to_schema(schema_message):
     extended_schema_message['schema']['properties']['_sdc_batched_at'] = {'type': ['null', 'string'],
                                                                           'format': 'date-time'}
     extended_schema_message['schema']['properties']['_sdc_deleted_at'] = {'type': ['null', 'string']}
+    extended_schema_message['schema']['properties']['_sdc_source_schema'] = {'type': ['null', 'string']}
 
     return extended_schema_message
 
@@ -134,6 +135,11 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
                 raise Exception(
                     f"A record for stream {o['stream']} was encountered before a corresponding schema")
 
+            # todo: custom edit. This is hackish and probably needs a better solution
+            if config.get('use_source_schema_name_as_pk'):
+                stream_schema_name = stream_utils.stream_name_to_dict(o['stream'])['schema_name']
+                o['record']['_sdc_source_schema'] = stream_schema_name
+
             # Get schema for this record's stream
             stream = o['stream']
 
@@ -166,7 +172,8 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
 
             # append record
             if config.get('add_metadata_columns') or config.get('hard_delete'):
-                records_to_load[stream][primary_key_string] = stream_utils.add_metadata_values_to_record(o)
+                records_to_load[stream][primary_key_string] = stream_utils\
+                    .add_metadata_values_to_record(o, stream_schema_name)
             else:
                 records_to_load[stream][primary_key_string] = o['record']
 
@@ -209,6 +216,9 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
 
             stream = o['stream']
             new_schema = stream_utils.float_to_decimal(o['schema'])
+
+            if config.get('use_source_schema_name_as_pk'):
+                o['key_properties'].insert(0, '_sdc_source_schema')
 
             # Update and flush only if the the schema is new or different than
             # the previously used version of the schema

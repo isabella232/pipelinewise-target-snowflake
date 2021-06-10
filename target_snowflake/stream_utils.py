@@ -81,7 +81,7 @@ def float_to_decimal(value):
     return value
 
 
-def add_metadata_values_to_record(record_message):
+def add_metadata_values_to_record(record_message, stream_schema_name):
     """Populate metadata _sdc columns from incoming record message
     The location of the required attributes are fixed in the stream
     """
@@ -89,6 +89,7 @@ def add_metadata_values_to_record(record_message):
     extended_record['_sdc_extracted_at'] = record_message.get('time_extracted')
     extended_record['_sdc_batched_at'] = datetime.now().isoformat()
     extended_record['_sdc_deleted_at'] = record_message.get('record', {}).get('_sdc_deleted_at')
+    extended_record['_sdc_source_schema'] = stream_schema_name
 
     return extended_record
 
