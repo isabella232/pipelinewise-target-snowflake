@@ -137,7 +137,7 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
 
             # todo: custom edit. This is hackish and probably needs a better solution
             stream_schema_name = stream_utils.stream_name_to_dict(o['stream'])['schema_name']
-            if config.get('use_source_schema_name_as_pk'):
+            if config.get('use_source_schema_name_as_pk') == "true":
                 o['record']['_sdc_source_schema'] = stream_schema_name
 
             # Get schema for this record's stream
@@ -217,7 +217,7 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
             stream = o['stream']
             new_schema = stream_utils.float_to_decimal(o['schema'])
 
-            if config.get('use_source_schema_name_as_pk'):
+            if config.get('use_source_schema_name_as_pk') == "true":
                 o['key_properties'].insert(0, '_sdc_source_schema')
 
             # Update and flush only if the the schema is new or different than
