@@ -136,8 +136,8 @@ def persist_lines(config, lines, table_cache=None, file_format_type: FileFormatT
                     f"A record for stream {o['stream']} was encountered before a corresponding schema")
 
             # todo: custom edit. This is hackish and probably needs a better solution
+            stream_schema_name = stream_utils.stream_name_to_dict(o['stream'])['schema_name']
             if config.get('use_source_schema_name_as_pk'):
-                stream_schema_name = stream_utils.stream_name_to_dict(o['stream'])['schema_name']
                 o['record']['_sdc_source_schema'] = stream_schema_name
 
             # Get schema for this record's stream
